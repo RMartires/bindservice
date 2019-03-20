@@ -132,6 +132,13 @@ public class bindservice extends Service implements SensorEventListener{
                 zgesturetrigered = true;
                 zprevtime = currrnttime;
 
+                if (bound)
+                    activity.updateclient(colors.get(j));
+
+                j++;
+                if (j > 3)
+                    j = 2;
+
 
             }
 
@@ -167,14 +174,6 @@ public class bindservice extends Service implements SensorEventListener{
             //reset triger time gap more than 50ms
             if (rolltimeint > 50)
                 zgesturetrigered = false;
-
-                if (bound)
-                    activity.updateclient(colors.get(j));
-
-                j++;
-                if (j > 3)
-                    j = 2;
-
 
         }
 
