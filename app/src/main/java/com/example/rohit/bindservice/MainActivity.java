@@ -4,7 +4,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.IBinder;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,22 +15,29 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import rx.Observer;
-import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
-
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements bindservice.callbacks {
 
     private String TAG="mainact";
     private Button button;
     private boolean started =false;
     private bindservice service=null;
     private boolean bound=false;
+    private Intent intent=null;
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(intent!=null) {
+            unbindService(connection);
+            stopService(intent);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
         button = findViewById(R.id.button);
 
@@ -35,20 +45,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if(!started){
-                    Intent intent =new Intent(getBaseContext(), bindservice.class);
+                    intent =new Intent(getBaseContext(), bindservice.class);
                     startService(intent);
                     bindService(intent,connection, Context.BIND_AUTO_CREATE);
                     started=true;
                 }else {
                     unbindService(connection);
+                    stopService(intent);
                     bound=false;
                     started=false;
                 }
 
             }
         });
-
-
 
 
     }
@@ -60,9 +69,9 @@ public class MainActivity extends AppCompatActivity {
             service = binder.getService();
             bound=true;
             Log.d(TAG, "onServiceConnected: ");
+            service.setbound(true);
+            service.setcallback(MainActivity.this);
 
-            if(service.getObservable()==null)
-                Log.d(TAG, "onServiceConnected: errorbitch");
 
         }
 
@@ -72,6 +81,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
     };
+
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void updateclient(int i) {
+        this.getWindow().getDecorView().setBackgroundColor(i);
+    }
 
 
 }
